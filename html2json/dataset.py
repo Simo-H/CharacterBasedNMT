@@ -4,7 +4,13 @@ from torch.utils.data import Dataset
 
 
 def padding_collate_fn(batch, pad_token_html, pad_token_json):
-
+    """
+    Collate function for the dataloader, padding the sequences.
+    :param batch:
+    :param pad_token_html:
+    :param pad_token_json:
+    :return: a tuple of batched padded sequences
+    """
     src_batch, tgt_batch = list(zip(*batch))
     src_batch = pad_sequence(src_batch, padding_value=pad_token_html)
     tgt_batch = pad_sequence(tgt_batch, padding_value=pad_token_json)
@@ -12,6 +18,9 @@ def padding_collate_fn(batch, pad_token_html, pad_token_json):
 
 
 class HTML_JSON_Dataset(Dataset):
+    """
+    A dataset class for the html to json task
+    """
     def __init__(self, html_data, json_data):
         self.html_data = html_data
         self.json_data = json_data

@@ -5,17 +5,27 @@ from torch.nn import Transformer
 import math
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+
 # helper Module that adds positional encoding to the token embedding to introduce a notion of word order.
 class PositionalEncoding(nn.Module):
+    """
+    Adds positional encoding to the token embedding to introduce a notion of word order.
+    """
     def __init__(self,
                  emb_size: int,
                  dropout: float,
                  maxlen: int = 5000):
         super(PositionalEncoding, self).__init__()
+        # Creates a tensor for the denominator used in the sine and cosine functions.
+        # This tensor is used to scale the positions.
         den = torch.exp(- torch.arange(0, emb_size, 2)* math.log(10000) / emb_size)
+        # Creates a tensor of position indices from 0 to maxlen-1 and reshapes it to a column vector
         pos = torch.arange(0, maxlen).reshape(maxlen, 1)
+        # initialize position encoding tensor
         pos_embedding = torch.zeros((maxlen, emb_size))
+        # applies the sine function to even indices.
         pos_embedding[:, 0::2] = torch.sin(pos * den)
+        # applies the cosine function to even indices.
         pos_embedding[:, 1::2] = torch.cos(pos * den)
         pos_embedding = pos_embedding.unsqueeze(-2)
 
@@ -23,10 +33,15 @@ class PositionalEncoding(nn.Module):
         self.register_buffer('pos_embedding', pos_embedding)
 
     def forward(self, token_embedding: Tensor):
+        # calculating the positional encoding by adding the token embedding and the position embedding
         return self.dropout(token_embedding + self.pos_embedding[:token_embedding.size(0), :])
+
 
 # helper Module to convert tensor of input indices into corresponding tensor of token embeddings
 class TokenEmbedding(nn.Module):
+    """
+    A simple lookup table that stores embeddings of a fixed dictionary and size.
+    """
     def __init__(self, vocab_size: int, emb_size):
         super(TokenEmbedding, self).__init__()
         self.embedding = nn.Embedding(vocab_size, emb_size)
@@ -34,6 +49,7 @@ class TokenEmbedding(nn.Module):
 
     def forward(self, tokens: Tensor):
         return self.embedding(tokens.long()) * math.sqrt(self.emb_size)
+
 
 # Seq2Seq Network
 class Seq2SeqTransformer(nn.Module):

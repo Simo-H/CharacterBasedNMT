@@ -7,11 +7,18 @@ DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 def train_epoch(model, optimizer, train_dataloader, loss_fn):
+    """
+    Train the model for one epoch
+    :param model:
+    :param optimizer:
+    :param train_dataloader:
+    :param loss_fn:
+    :return: epoch loss
+    """
     model.train()
     losses = 0
 
     for i, (src, tgt) in enumerate(train_dataloader):
-
         src = src.to(DEVICE)
         tgt = tgt.to(DEVICE)
 
@@ -41,6 +48,13 @@ def train_epoch(model, optimizer, train_dataloader, loss_fn):
 
 
 def evaluate(model, validation_dataloader, loss_fn):
+    """
+    Evaluate the model on a validation set
+    :param model:
+    :param validation_dataloader:
+    :param loss_fn:
+    :return:
+    """
     model.eval()
     losses = 0
 

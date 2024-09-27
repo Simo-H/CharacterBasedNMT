@@ -29,7 +29,8 @@ def remove_whitespace(soup):
 
 def clean_html(html_str):
     """
-    Clean the html data by removing attributes and whitespaces from tags, and newlines from between tags.
+    Clean the html data by removing attributes and whitespaces
+    from tags, and newlines from between tags.
     return the cleaned html as a string
     :param html_str:
     :return: str

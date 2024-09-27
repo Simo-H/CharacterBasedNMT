@@ -5,10 +5,25 @@ DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 def padding_mask(seq: torch.Tensor, pad_token):
+    """
+    Create a mask for the padding tokens
+    :param seq:
+    :param pad_token:
+    :return:
+    """
     return (seq == pad_token).transpose(0, 1)
 
 
 def greedy_decode(model, src, src_mask, max_len):
+    """
+    Greedy decoding - generate the output sequence token by token and taking
+    the token with the highest probability in each step
+    :param model:
+    :param src: src tensor
+    :param src_mask: src mask
+    :param max_len:
+    :return: generated sequence
+    """
     src = src.to(DEVICE)
     src_mask = src_mask.to(DEVICE)
 
@@ -32,6 +47,14 @@ def greedy_decode(model, src, src_mask, max_len):
 
 
 def translate(model: torch.nn.Module, src_sentence: str, html_tokenizer, json_tokenizer):
+    """
+    Translate a source sentence to a target sentence
+    :param model:
+    :param src_sentence:
+    :param html_tokenizer:
+    :param json_tokenizer:
+    :return:
+    """
     model.eval()
     src = torch.LongTensor(html_tokenizer.encode(src_sentence)).view(-1, 1)
     num_tokens = src.shape[0]
