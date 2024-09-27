@@ -69,7 +69,7 @@ def evaluate(model, validation_dataloader, loss_fn):
         tgt_padding_mask = padding_mask(tgt_input, MASK_TOKEN)
         tgt_mask = Transformer.generate_square_subsequent_mask(tgt_input.size(0)).to(DEVICE)
 
-        logits = model(src, tgt_input, src_mask, tgt_mask,src_padding_mask, tgt_padding_mask, src_padding_mask)
+        logits = model(src, tgt_input, src_mask, tgt_mask, src_padding_mask, tgt_padding_mask, src_padding_mask)
 
         tgt_out = tgt[1:, :]
         loss = loss_fn(logits.reshape(-1, logits.shape[-1]), tgt_out.reshape(-1))
