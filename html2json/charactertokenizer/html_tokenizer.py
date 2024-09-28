@@ -1,5 +1,5 @@
 from .core import CharacterTokenizer
-
+import pickle
 
 class HTMLTokenizer:
     """
@@ -44,3 +44,13 @@ class HTMLTokenizer:
     def __len__(self):
         return len(self.tokenizer)
 
+    def save(self, path):
+        # save with pickle
+        with open(path, 'wb') as f:
+            pickle.dump(self, f)
+
+    @staticmethod
+    def load(path):
+        # load with pickle
+        with open(path, 'rb') as f:
+            return pickle.load(f)
