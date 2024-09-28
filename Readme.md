@@ -9,9 +9,11 @@ The solution should be generalizable to any table and json structure that is def
 The dataset contains 30K samples of HTML tables and their corresponding JSON objects.
 
 **HTML table example:**
+
 ![HTML example](./readme_resources/html_example.png)
 
 **JSON object example:**
+
 ![JSON example](./readme_resources/json_exmaple.png)
 
 From observing few examples of html and json pairs, we learn that:
