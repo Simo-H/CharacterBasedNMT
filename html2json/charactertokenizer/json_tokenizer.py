@@ -60,26 +60,29 @@ class JSONTokenizer:
         """
         # building a tokenizer for the html data, each tag is a token and the characters inside the tags are also tokens
         # get a set of all tags in the html files
-        json_regular_tokens = set()
-        json_special_tokens = set()
+        self.json_regular_tokens = set()
+        self.json_structural_tokens = set()
+        self.json_key_tokens = set()
         # adding the json structural tokens
-        json_special_tokens.add("[{]")
-        json_special_tokens.add("[}]")
-        json_special_tokens.add("[:]")
-        json_special_tokens.add("[,]")
-        json_special_tokens.add("[[]")
-        json_special_tokens.add("[]]")
+        self.json_structural_tokens.add("[{]")
+        self.json_structural_tokens.add("[}]")
+        self.json_structural_tokens.add("[:]")
+        self.json_structural_tokens.add("[,]")
+        self.json_structural_tokens.add("[[]")
+        self.json_structural_tokens.add("[]]")
         # add some tokens that need to be escaped
-        json_regular_tokens.add("\"")
-        json_regular_tokens.add("\\")
+        self.json_regular_tokens.add("\"")
+        self.json_regular_tokens.add("\\")
         # adding the json keys and values
         for json_file in json_data:
             # add all keys to the set
             for key in get_keys(json_file):
-                json_special_tokens.add(f"[\"{key}\"]")
+                self.json_key_tokens.add(f"[\"{key}\"]")
             # add all regular characters from the values to the set
-            json_regular_tokens.update(get_values(json_file))
-        return CharacterTokenizer(characters=list(json_regular_tokens), special_tokens=list(json_special_tokens))
+            self.json_regular_tokens.update(get_values(json_file))
+        # make list form the sets
+        json_special_tokens = self.json_structural_tokens.union(self.json_key_tokens)
+        return CharacterTokenizer(characters=list(self.json_regular_tokens), special_tokens=list(json_special_tokens))
 
     def encode(self, text):
         return self.tokenizer.encode(text)

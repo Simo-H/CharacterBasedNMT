@@ -72,24 +72,24 @@ def beam_search(model, src, src_mask, start_token, end_token, beam_width=3, max_
 
     memory = model.encode(src, src_mask)
     # Initialize the beam with the start token
-    beams = [(torch.tensor([start_token]), 0)]  # List of tuples (sequence, score)
 
+    # beams = [(torch.ones(1, 1).fill_(CLS_TOKEN).type(torch.long).to(DEVICE), 0)]  # List of tuples (sequence, score)
+    beams = [(torch.tensor([start_token], device=DEVICE), 0)]
     for _ in range(max_length):
         all_candidates = []
         for seq, score in beams:
-            tgt = seq.to(DEVICE)  # Add batch dimension
+            # tgt = seq.to(DEVICE)  # Add batch dimension
+            tgt = seq.unsqueeze(-1).to(DEVICE)  # Add batch dimension
             tgt_mask = (Transformer.generate_square_subsequent_mask(tgt.size(0))
                         .type(torch.bool)).to(DEVICE)
             out = model.decode(tgt, memory, tgt_mask)
-
+            logits = model.generator(out[-1, :, :])  # Shape (1, vocab_size)
             # Decode the current sequence
-            # out = model.decode(tgt, memory)  # Shape (1, seq_len, d_model)
-            logits = out[:, -1, :]  # Shape (1, vocab_size)
             probs = F.log_softmax(logits, dim=-1).squeeze(0)  # Shape (vocab_size)
 
             # Expand each beam with all possible next tokens
             for i in range(probs.size(-1)):
-                candidate = (torch.cat([seq, torch.tensor([i])]), score + probs[i].item())
+                candidate = (torch.cat([seq, torch.tensor([i], device=DEVICE)]), score + probs[i].item())
                 all_candidates.append(candidate)
 
         # Select the top beam_width candidates
@@ -102,10 +102,13 @@ def beam_search(model, src, src_mask, start_token, end_token, beam_width=3, max_
 
     # Select the best beam
     best_sequence = sorted(beams, key=lambda x: x[1], reverse=True)[0][0]
-    return best_sequence
+    # take the sequence until the end token
+    best_sequence = list(best_sequence.cpu().numpy())
+    first_end_token = best_sequence.index(end_token)
+    return best_sequence[:first_end_token+1]
 
 
-def translate_beam_search(model: torch.nn.Module, src_sentence: str, html_tokenizer, json_tokenizer):
+def translate_beam_search(model: torch.nn.Module, src_sentence: str, html_tokenizer, json_tokenizer, beam_width=3):
     """
     Translate a source sentence to a target sentence
     :param model:
@@ -119,5 +122,5 @@ def translate_beam_search(model: torch.nn.Module, src_sentence: str, html_tokeni
     num_tokens = src.shape[0]
     src_mask = (torch.zeros(num_tokens, num_tokens)).type(torch.bool)
     tgt_tokens = beam_search(
-        model,  src, src_mask, CLS_TOKEN, SEP_TOKEN, beam_width=1, max_length=1000).flatten()
-    return "".join(json_tokenizer.decode(tgt_tokens.cpu().numpy()))
+        model,  src, src_mask, CLS_TOKEN, SEP_TOKEN, beam_width=beam_width, max_length=num_tokens*2)
+    return "".join(json_tokenizer.decode(tgt_tokens))

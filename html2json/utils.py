@@ -1,6 +1,7 @@
 import json
 import os
 from bs4 import BeautifulSoup
+import re
 
 
 def remove_attrs(soup):
@@ -61,6 +62,38 @@ class TokenizedJSONEncoder(json.JSONEncoder):
                 return json.dumps(value)
 
         return custom_format(obj)
+
+
+class CustomJSONDecoder(json.JSONDecoder):
+    def __init__(self, *args, **kwargs):
+        self.custom_patterns = kwargs.pop('custom_patterns', {})
+        super().__init__(*args, **kwargs)
+
+    def decode(self, s):
+        def custom_parse(value):
+            # Apply custom patterns
+            for pattern, replacement in self.custom_patterns.items():
+                value = re.sub(pattern, replacement, value)
+            return json.loads(value)
+
+        return custom_parse(s)
+
+
+def reverse_tokenized_json(json_str, json_tokenizer):
+    """
+    Reverse the tokenized json string back to a python object
+    :param json_str:
+    :param json_tokenizer:
+    :return:
+    """
+    structural_tokens = json_tokenizer.json_structural_tokens
+    keys_tokens = json_tokenizer.json_key_tokens
+    structural_patterns = {re.escape(token): token[1:-1] for token in structural_tokens}
+    keys_patterns = {re.escape(token): token[1:-1] for token in keys_tokens}
+    special_tokens = {re.escape('[CLS]'): '', re.escape('[SEP]'): '', re.escape('[PAD]'): '', re.escape('[MASK]'): ''}
+    # Add the structural and keys patterns to the custom decoder
+    custom_patterns = {**structural_patterns, **keys_patterns, **special_tokens}
+    return json.loads(json_str, cls=CustomJSONDecoder, custom_patterns=custom_patterns)
 
 
 def load_data(html_dir, json_dir, as_string=False, limit=None):
