@@ -40,6 +40,32 @@ but also their structure.
 2. The nature of the data is sparse, tables holds numerical values which may not repeat often and will create
 a large vocabulary, which is not ideal for this kind of approach.
 
+## Project Structure
+
+The project is structured as follows:
+```
+CharacterBasedNMT---|
+                    |---html2json
+                    |---assets -> contains the model and both html and json tokenizers
+                    |---checkpoints -> contains the model checkpoints
+                    |---generated_tables -> unzipped data
+                    |---readme_resources
+                    |---html2json.ipynb -> This notebook is the driver notebook for the project
+                    |---html2json.zip -> unzip this file when running Google Colab
+                    |---dataset.zip -> unzip this file when running locally
+                    |---requirements.txt
+                    |---README.md
+
+html2json-----------|
+                    |---charactertokenizer ---> character based tokenizer for html and json
+                    |---seq2seq ---> transformer model and generation methods
+                    |---dataset.py --> dataset class
+                    |---training.py --> training loop
+                    |---utils.py --> utility functions
+
+```
+
+Go to the `html2json.ipynb` notebook to run the project.
 
 ## Character Based Neural Machine Translation
 
@@ -95,8 +121,10 @@ I implemented 2 generation methods:
 2. **Beam search generation**: The model generates the json object using beam search.
 
 ### Evaluation: The model is evaluated on the BLEU score.
-The validation loss (Categorical CrossEntropy) is 0.0009 which is good.
-The BLEU score is 0.98 which is also very good.
+I mainly evaluated the model by comparing the generated json object with the true json object.
+The validation loss (Categorical CrossEntropy) is 0.0009.
+I have also evaluated the model on the BLEU score which is a common metric for evaluating machine translation models.
+The BLEU score is 0.98.
 
 ## Future Improvements
 1. Using libraries like jsonRepair to validate the generated json object structure.
